@@ -23,6 +23,12 @@ if errorlevel 1 (
     exit /b 1
 )
 
+REM Skip Streamlit's one-time "enter your email" prompt, which otherwise blocks startup.
+if not exist "%USERPROFILE%\.streamlit\credentials.toml" (
+    if not exist "%USERPROFILE%\.streamlit" mkdir "%USERPROFILE%\.streamlit"
+    (echo [general]& echo email = "")> "%USERPROFILE%\.streamlit\credentials.toml"
+)
+
 echo Starting the app. It will open in your browser. Close this window to stop it.
 python -m streamlit run app.py
 pause
