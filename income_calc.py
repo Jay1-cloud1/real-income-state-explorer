@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -71,3 +72,44 @@ def real_income_growth(income):
     )
 
     return growth
+
+
+STATE_NAMES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
+    "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "DC": "District of Columbia",
+    "FL": "Florida", "GA": "Georgia", "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois",
+    "IN": "Indiana", "IA": "Iowa", "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana",
+    "ME": "Maine", "MD": "Maryland", "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota",
+    "MS": "Mississippi", "MO": "Missouri", "MT": "Montana", "NE": "Nebraska", "NV": "Nevada",
+    "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico", "NY": "New York",
+    "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio", "OK": "Oklahoma", "OR": "Oregon",
+    "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina", "SD": "South Dakota",
+    "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont", "VA": "Virginia",
+    "WA": "Washington", "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
+}
+
+
+def state_name(code):
+    return STATE_NAMES.get(code, code)
+
+
+def demo_dataset(first_year=2000, last_year=2024, seed=7):
+    """Made-up data in the cleaned_long layout, for trying the app without a file."""
+    rng = np.random.default_rng(seed)
+    rows = []
+
+    cpi = 170.0
+    for year in range(first_year, last_year + 1):
+        yearly_inflation = rng.uniform(0.012, 0.045)
+        for month in range(1, 13):
+            cpi *= (1 + yearly_inflation) ** (1 / 12)
+            rows.append(("national", "US", "CPIAUCSL", "cpi", f"{year}-{month:02d}-01", round(cpi, 3)))
+
+    for code in STATE_NAMES:
+        income = rng.uniform(24000, 42000)
+        trend = rng.uniform(0.02, 0.05)
+        for year in range(first_year, last_year + 1):
+            rows.append(("state", code, f"{code}PCPI", "income_per_capita", f"{year}-01-01", round(income)))
+            income *= 1 + trend + rng.normal(0, 0.012)
+
+    return pd.DataFrame(rows, columns=["geo_level", "geo", "series", "topic", "date", "value"])

@@ -4,8 +4,10 @@ import pytest
 from income_calc import (
     annual_cpi_index,
     clean_data,
+    demo_dataset,
     pick_income_topic,
     real_income_growth,
+    state_name,
     state_real_income,
 )
 
@@ -73,3 +75,16 @@ def test_pick_income_topic():
     assert pick_income_topic(["cpi", "median_income", "income_per_capita"]) == "income_per_capita"
     assert pick_income_topic(["cpi", "median_income"]) == "median_income"
     assert pick_income_topic(["cpi"]) is None
+
+
+def test_demo_dataset_works_end_to_end():
+    df = clean_data(demo_dataset())
+    assert pick_income_topic(df["topic"].unique()) == "income_per_capita"
+    income = state_real_income(df, "income_per_capita", annual_cpi_index(df, 2017))
+    assert income["geo"].nunique() == 51
+    assert len(real_income_growth(income)) == 51
+
+
+def test_state_name():
+    assert state_name("MD") == "Maryland"
+    assert state_name("ZZ") == "ZZ"
